@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+*.env
+*.venv
+
+# Flask specific
+instance/
+*.db
+*.sqlite3
+
+# Logs and local environment files
+*.log
+.env
+config.py
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Python packages
+dist/
+build/
+*.egg-info/
+
+# Word files (Generated Reports)
+*.docx
+
+# Ignore node_modules if using frontend with Node.js
+node_modules/
