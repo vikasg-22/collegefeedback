@@ -246,7 +246,7 @@ document.getElementById("feedbackForm").addEventListener("submit", async functio
 
     try {
         // Send data to backend
-        const response = await fetch("http://127.0.0.1:5000/submit-feedback", {
+        const response = await fetch("/submit-feedback", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
