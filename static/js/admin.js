@@ -1,5 +1,3 @@
-const API_BASE_URL = "https://collegefeedback-1.onrender.com"; // Replace with your actual deployed backend URL
-
 const overlay = document.getElementById("dataOverlay");
 const overlayTitle = document.getElementById("overlayTitle");
 const dataHeader = document.getElementById("dataHeader");
@@ -41,9 +39,11 @@ document.getElementById("addSubjectForm").addEventListener("submit", async (e) =
     const newSubject = document.getElementById("newSubject").value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/add-subject`, {
+        const response = await fetch('/add-subject', {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({ branch, semester, subject: newSubject })
         });
         const data = await response.json();
@@ -57,14 +57,20 @@ document.getElementById("addSubjectForm").addEventListener("submit", async (e) =
 
 function showOverlay(title, headers, data) {
     overlayTitle.textContent = title;
+
+    // Populate the table header
     dataHeader.innerHTML = headers.map(header => `<th>${header}</th>`).join("");
-    dataBody.innerHTML = data.map(row =>
+
+    // Populate the table body
+    dataBody.innerHTML = data.map(row => 
         `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`
     ).join("");
-    body.classList.add("blur");
-    overlay.classList.add("active");
+
+    body.classList.add("blur"); // Blur the background
+    overlay.classList.add("active"); // Show overlay
 }
 
+// Hide overlay and restore dashboard
 backBtn.addEventListener("click", () => {
     overlay.classList.remove("active");
     body.classList.remove("blur");
@@ -72,11 +78,16 @@ backBtn.addEventListener("click", () => {
 
 document.addEventListener("DOMContentLoaded", function () {
     const yearSelect = document.getElementById("year-admin");
+
     if (yearSelect) {
-        const currentYear = new Date().getFullYear();
+        const currentYear = new Date().getFullYear(); // Get the current year
         const academicYear1 = `${currentYear - 1}-${currentYear}`;
         const academicYear2 = `${currentYear}-${currentYear + 1}`;
+
+        // Clear existing options
         yearSelect.innerHTML = `<option value="">Select Year</option>`;
+
+        // Add dynamically generated years
         yearSelect.innerHTML += `
             <option value="${academicYear1}">${academicYear1}</option>
             <option value="${academicYear2}">${academicYear2}</option>
@@ -84,12 +95,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// Fetch available branches from the database
 async function fetchBranches() {
     try {
-        const response = await fetch(`${API_BASE_URL}/get-branches`);
+        const response = await fetch('/get-branches');
         const data = await response.json();
         const branchSelect = document.getElementById("branchSelect");
-        branchSelect.innerHTML = '<option value="">Select Branch</option>';
+        branchSelect.innerHTML = '<option value="">Select Branch</option>'; // Clear previous data
+
         data.forEach(branch => {
             const option = document.createElement("option");
             option.value = branch;
@@ -102,6 +115,7 @@ async function fetchBranches() {
     }
 }
 
+// Function to fetch and display subjects based on selection
 async function showSubjectsOverlay() {
     const branch = document.getElementById("branchSelect").value;
     const semester = document.getElementById("semesterSelect").value;
@@ -112,7 +126,7 @@ async function showSubjectsOverlay() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/get-subjects/${branch}/${semester}`);
+        const response = await fetch(`/get-subjects/${branch}/${semester}`);
         const data = await response.json();
 
         if (data.error) {
@@ -121,7 +135,7 @@ async function showSubjectsOverlay() {
         }
 
         const tableBody = document.getElementById("subjectsTableBody");
-        tableBody.innerHTML = "";
+        tableBody.innerHTML = ""; // Clear previous data
 
         data.forEach(subject => {
             const row = document.createElement("tr");
@@ -129,7 +143,9 @@ async function showSubjectsOverlay() {
                 <td>${branch}</td>
                 <td>${semester}</td>
                 <td>${subject}</td>
-                <td><button class="delete-btn" onclick="deleteSubject('${branch}', '${semester}', '${subject}')">Delete</button></td>
+                <td>
+                    <button class="delete-btn" onclick="deleteSubject('${branch}', '${semester}', '${subject}')">Delete</button>
+                </td>
             `;
             tableBody.appendChild(row);
         });
@@ -142,12 +158,19 @@ async function showSubjectsOverlay() {
     }
 }
 
+// Function to fetch and populate branches dynamically
 async function fetchAndPopulateBranches() {
     const branchSelect = document.getElementById("branch");
+
     try {
-        const response = await fetch(`${API_BASE_URL}/get-branches`);
+        // Fetch branches from the server
+        const response = await fetch('/get-branches');
         const data = await response.json();
+
+        // Clear existing options (except the default "Select" option)
         branchSelect.innerHTML = '<option value="">Select</option>';
+
+        // Populate the branch dropdown with fetched data
         data.forEach(branch => {
             const option = document.createElement("option");
             option.value = branch;
@@ -156,18 +179,20 @@ async function fetchAndPopulateBranches() {
         });
     } catch (error) {
         console.error("Error fetching branches:", error);
-        alert("Failed to load branches.");
+        alert("Failed to load branches. Please try again.");
     }
 }
 
+// Call the function when the page loads
 document.addEventListener("DOMContentLoaded", function () {
-    fetchAndPopulateBranches();
+    fetchAndPopulateBranches(); // Populate branches
 });
 
+// Function to delete a subject
 async function deleteSubject(branch, semester, subject) {
     if (confirm(`Are you sure you want to delete "${subject}"?`)) {
         try {
-            const response = await fetch(`${API_BASE_URL}/delete-subject`, {
+            const response = await fetch('/delete-subject', {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ branch, semester, subject })
@@ -175,7 +200,7 @@ async function deleteSubject(branch, semester, subject) {
             const data = await response.json();
             alert(data.message);
             if (data.success) {
-                showSubjectsOverlay();
+                showSubjectsOverlay(); // Refresh the table
             }
         } catch (error) {
             console.error("Error deleting subject:", error);
@@ -184,21 +209,25 @@ async function deleteSubject(branch, semester, subject) {
     }
 }
 
+// Function to close the subjects overlay
 function closeSubjectsOverlay() {
     document.getElementById("subjectsOverlay").classList.remove("active");
     document.body.classList.remove("blur");
 }
 
+// Event Listeners
 document.getElementById("fetchSubjectsBtn").addEventListener("click", showSubjectsOverlay);
 
+// Load branches on page load
 document.addEventListener("DOMContentLoaded", fetchBranches);
 
+// Function to show the questions overlay
 async function showQuestionsOverlay() {
     try {
-        const response = await fetch(`${API_BASE_URL}/get-questions`);
+        const response = await fetch('/get-questions');
         const data = await response.json();
         currentQuestions = data;
-        showQuestions('mid');
+        showQuestions('mid'); // Default to mid semester questions
         document.getElementById("questionsOverlay").classList.add("active");
         document.body.classList.add("blur");
     } catch (error) {
@@ -207,6 +236,7 @@ async function showQuestionsOverlay() {
     }
 }
 
+// Function to show questions based on type (mid/end)
 function showQuestions(type) {
     const questions = type === 'mid' ? currentQuestions.mid_questions : currentQuestions.end_questions;
     const tableBody = document.getElementById("questionsTableBody");
@@ -214,35 +244,45 @@ function showQuestions(type) {
 
     questions.forEach((question, index) => {
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${index + 1}</td><td>${question}</td>`;
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${question}</td>
+        `;
         tableBody.appendChild(row);
     });
 
+    // Update active tab
     document.querySelectorAll(".tab-button").forEach(button => button.classList.remove("active"));
     document.getElementById(`${type}Tab`).classList.add("active");
 }
 
+// Function to close the questions overlay
 function closeQuestionsOverlay() {
     document.getElementById("questionsOverlay").classList.remove("active");
     document.body.classList.remove("blur");
 }
 
+// Event listener for the "View Questions" button
 document.getElementById("viewQuestionsBtn").addEventListener("click", showQuestionsOverlay);
 
+// Function to update subjects based on selected branch and semester
 async function updateSubject() {
     const branch = document.getElementById('branch-admin').value;
     const semester = document.getElementById('semester-admin').value;
     const subjectSelect = document.getElementById('subject');
 
+    // Clear subject options first
     subjectSelect.innerHTML = '<option value="">Select Subject</option>';
 
+    // If branch and semester are selected, fetch subjects
     if (branch && semester) {
         try {
-            const response = await fetch(`${API_BASE_URL}/get-subjects/${branch}/${semester}`);
+            const response = await fetch(`/get-subjects/${branch}/${semester}`);
             const data = await response.json();
             if (data.error) {
                 alert(data.error);
             } else {
+                // Populate the subject dropdown
                 data.forEach(subject => {
                     const option = document.createElement('option');
                     option.value = subject;
@@ -255,7 +295,7 @@ async function updateSubject() {
         }
     }
 }
-
+// Add event listener to the "Fetch Feedback" button
 document.getElementById('fetchFeedbackBtn').addEventListener('click', async function () {
     const year = document.getElementById('year-admin').value;
     const branch = document.getElementById('branch-admin').value;
@@ -269,7 +309,7 @@ document.getElementById('fetchFeedbackBtn').addEventListener('click', async func
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/fetch-feedback?year=${year}&branch=${branch}&semester=${semester}&subject=${subject}&form=${form}`);
+        const response = await fetch(`/fetch-feedback?year=${year}&branch=${branch}&semester=${semester}&subject=${subject}&form=${form}`);
         const data = await response.json();
         if (data.message) {
             alert('No feedback available for this selection.');
@@ -282,6 +322,33 @@ document.getElementById('fetchFeedbackBtn').addEventListener('click', async func
     }
 });
 
+// Function to fetch branches from the backend
+async function fetchBranches() {
+    try {
+        const response = await fetch('/get-branches');
+        const data = await response.json();
+
+        // Populate branch dropdowns
+        const branchDropdowns = document.querySelectorAll('select[id*="branch"]');
+        branchDropdowns.forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Select Branch</option>'; // Reset options
+            data.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch;
+                option.textContent = branch;
+                dropdown.appendChild(option);
+            });
+        });
+    } catch (error) {
+        console.error('Error fetching branches:', error);
+        alert('Failed to load branches. Please try again.');
+    }
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', fetchBranches);
+
+// Function to download feedback as an Excel file
 const downloadFeedbackBtn = document.getElementById("downloadFeedbackBtn");
 downloadFeedbackBtn.addEventListener("click", function () {
     const year = document.getElementById("year-admin").value;
@@ -295,16 +362,19 @@ downloadFeedbackBtn.addEventListener("click", function () {
         return;
     }
 
-    window.location.href = `${API_BASE_URL}/download-feedback?year=${year}&branch=${branch}&semester=${semester}&subject=${subject}&form=${form}`;
+    // Redirect to the download-feedback endpoint with parameters
+    window.location.href = `/download-feedback?year=${year}&branch=${branch}&semester=${semester}&subject=${subject}&form=${form}`;
 });
-
+// Function to show the feedback overlay
 function showFeedbackOverlay(data) {
+    // Update header information
     document.getElementById('selectedYear').textContent = data.year;
     document.getElementById('selectedBranch').textContent = data.branch;
     document.getElementById('selectedSemester').textContent = data.semester;
     document.getElementById('selectedSubject').textContent = data.subject;
     document.getElementById('selectedFormType').textContent = data.form.charAt(0).toUpperCase() + data.form.slice(1);
 
+    // Populate the feedback table
     const tableBody = document.getElementById('feedbackTableBody');
     tableBody.innerHTML = '';
 
@@ -323,9 +393,11 @@ function showFeedbackOverlay(data) {
             <td style="font-weight: bold;">${item.AVG}</td>
         `;
         tableBody.appendChild(row);
+
         totalAVG += parseFloat(item.AVG) || 0;
     });
 
+    // Add total average row
     const finalTotalAVG = questionCount > 0 ? (totalAVG / questionCount).toFixed(2) : 0;
     const totalRow = document.createElement('tr');
     totalRow.classList.add('total-average-row');
@@ -334,10 +406,12 @@ function showFeedbackOverlay(data) {
         <td style="font-weight:bold;">${finalTotalAVG}</td>
     `;
     tableBody.appendChild(totalRow);
+
+    // Show the feedback overlay
     document.getElementById('feedbackOverlay').classList.add('active');
     document.body.classList.add('blur');
 }
-
+// Function to close the feedback overlay
 function closeFeedbackOverlay() {
     document.getElementById("feedbackOverlay").classList.remove("active");
     document.body.classList.remove("blur");
