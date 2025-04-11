@@ -1,0 +1,5 @@
+Flask>=2.0
+flask_pymongo>=2.3.0
+bson
+flask_cors
+python-docx
