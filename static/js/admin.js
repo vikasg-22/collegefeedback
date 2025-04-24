@@ -326,7 +326,7 @@ document.getElementById('fetchFeedbackBtn').addEventListener('click', async func
 async function fetchBranches() {
     try {
         const response = await fetch('/get-branches');
-        const data = await response.json();
+              const data = await response.json();
 
         // Populate branch dropdowns
         const branchDropdowns = document.querySelectorAll('select[id*="branch"]');
